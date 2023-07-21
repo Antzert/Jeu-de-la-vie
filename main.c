@@ -5,18 +5,20 @@
 
 int main(int argc, char** argv)
 {
-    //reinitialiser l'aleatoire
+    //Aleatoire
     srand(time(NULL));
-    //creation de la classe du jeu
+
+    //Creation de la structure du jeu
     GameWindow* gameWindow = NULL;
     if(argc == 5)
         gameWindow = ConstructGameWindow(strtol(argv[1],NULL, 10), strtol(argv[2],NULL, 10), strtol(argv[3],NULL, 10),  strtol(argv[4],NULL, 10));
     else
         gameWindow = ConstructGameWindow(1920, 1080,10, true);
-    //boucle du jeu
+
+    //Boucle du jeu
     while(GetLaunch(gameWindow))
     {
-        //gestion des événements
+        //Gestion des événements
         SDL_Event event;
         while(SDL_PollEvent(&event))
             switch(event.type)
@@ -73,26 +75,22 @@ int main(int argc, char** argv)
                         case SDLK_RETURN:
                             changeGrid(gameWindow);
                             continue;
-                        default:
-                            continue;
                     }
+                    break;
                 case SDL_MOUSEBUTTONDOWN:
                     if(event.button.button == SDL_BUTTON_LEFT)
                         GetClickCaseGameWindow(gameWindow, &event,true);
                     else if(event.button.button == SDL_BUTTON_RIGHT)
                         GetClickCaseGameWindow(gameWindow, &event,false);
-                    continue;
+                    break;
                 case SDL_QUIT:
                     QuitProgramme(gameWindow);
                     break;
-                default:
-                    break;
-
             }
-        //appelle de la methode update
+        //Appelle de la methode update
         UpdateGameWindow(gameWindow);
     }
-    //femeture du programme
+    //Femeture du programme
     DestructGameWindow(gameWindow);
     return EXIT_SUCCESS;
 }
