@@ -9,7 +9,7 @@
     
     Game* ConstructGame(int width, int height, int caseSize, GameWindow* gameWindow);
     void DestructGame(Game* game);
-    int UpdateGame(Game* game);
+    void UpdateGame(Game* game);
     void PrintMapGame(Game* game, SDL_Renderer* renderer);
     void RandomMapGame(Game* game);
     void ResetMapGame(Game* game);

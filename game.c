@@ -9,6 +9,7 @@ typedef struct Game
     int width;
     int caseSize;
     bool **map;
+    bool **tempMap;
 } Game ;
 
 Game* ConstructGame(int width, int height, int caseSize, GameWindow* gameWindow)
@@ -17,92 +18,91 @@ Game* ConstructGame(int width, int height, int caseSize, GameWindow* gameWindow)
     if(game == NULL)
         return NULL;
     game->gameWindow = gameWindow;
-    game->height = height;
     game->width = width;
+    game->height = height;
     game->caseSize = caseSize;
 
+    //creation des maps
     game->map = (bool**)malloc(sizeof(bool*) * height);
-    if(game->map == NULL)
-    {
-        DestructGame(game);
+    game->tempMap = (bool**)malloc(sizeof(bool*) * height);
+    if(game->map == NULL || game->tempMap == NULL)
         return NULL;
-    }
+
     for(int i = 0 ; i < game->height ; ++i)
     {
         game->map[i] = (bool*)malloc(sizeof(bool)* game->width);
-        if(game->map[i] == NULL)
-        {
-            DestructGame(game);
+        game->tempMap[i] = (bool*)malloc(sizeof(bool)* game->width);
+        if(game->map[i] == NULL || game->tempMap[i] == NULL)
             return NULL;
-        }
-    }   
-    //faire un map random
+    }
+    //Mettre toutes les cases de la map en blanc
     ResetMapGame(game);
     return game;
 }
+
 void DestructGame(Game* game)
 {
+    if(game == NULL)
+        return;
     for(int i = 0 ; i < game->height ; ++i)
+    {
         if(game->map[i] != NULL)
             free(game->map[i]);
+        if(game->tempMap[i] != NULL)
+            free(game->tempMap[i]);
+    }
     if(game->map != NULL)
         free(game->map);
+    if(game->tempMap != NULL)
+        free(game->tempMap);
     if(game != NULL)
         free(game);
 }
-int UpdateGame(Game* game)
+
+void UpdateGame(Game* game)
 {
-    //copy du tableau
-    bool **tempMap = NULL;
-    tempMap = (bool**)malloc(sizeof(bool*) * game->height);
-    if(tempMap == NULL)
-        return -1;
-    for(int i = 0 ; i < game->height ; ++i)
-    {
-        tempMap[i] = (bool*)malloc(sizeof(bool) * game->width);
-        if(tempMap[i] == NULL)
-            return -1;
-    }
+    //Copy du tableau
     for(int i = 0 ; i < game->height ; ++i)
         for(int j = 0 ; j < game->width ; ++j)
-            tempMap[i][j] = game->map[i][j];
-    //boucle de verification
+            game->tempMap[i][j] = game->map[i][j];
+
+    //Boucle de verification
     for(int i = 0 ; i < game->height ; ++i)
     {
         for(int j = 0 ; j < game->width ; ++j)
         {
             int numberOfNeighbord = 0;
-            //verification si la case en haut a droite existe
+            //Verification si la case en haut a gauche existe
             if(i != 0 && j != 0)
-                if(tempMap[i - 1][j - 1])
+                if(game->tempMap[i - 1][j - 1])
                     ++numberOfNeighbord;
             //verification si la case en haut au milieu existe
             if(i != 0)
-                if(tempMap[i - 1][j])
+                if(game->tempMap[i - 1][j])
                     ++numberOfNeighbord;
-            //verification si la case en haut a gauche existe
+            //verification si la case en haut a droite existe
             if(i != 0 && j != game->width -1)
-                if(tempMap[i - 1][j + 1])
+                if(game->tempMap[i - 1][j + 1])
                     ++numberOfNeighbord;
-            //verification si la case au mileu a gauche existe
+            //verification si la case au mileu a droite existe
             if(j != game->width -1)
-                if(tempMap[i][j + 1])
+                if(game->tempMap[i][j + 1])
                     ++numberOfNeighbord;
-            //verification si la case en bas a gauche existe
+            //verification si la case en bas a droite existe
             if(i != game->height - 1 && j != game->width -1 )
-                if(tempMap[i + 1][j + 1])
+                if(game->tempMap[i + 1][j + 1])
                     ++numberOfNeighbord;
             //verification si la case en bas au milieu existe
             if(i != game->height - 1)
-                if(tempMap[i + 1][j])
+                if(game->tempMap[i + 1][j])
                     ++numberOfNeighbord;
-            //verification si la case en bas a droite existe
+            //verification si la case en bas a gauche existe
             if(j!= 0 && i != game->height - 1)
-                if(tempMap[i + 1][j - 1])
+                if(game->tempMap[i + 1][j - 1])
                     ++numberOfNeighbord;
-            //verification si la case au milieu a droite existe
+            //verification si la case au milieu a gauche existe
             if(j!= 0)
-                if(tempMap[i][j - 1])
+                if(game->tempMap[i][j - 1])
                     ++numberOfNeighbord;
             //si le nombre de voisin n'est pas 2 ou 3 alors on le suprime
             if(numberOfNeighbord != 2 && numberOfNeighbord != 3)
@@ -112,14 +112,11 @@ int UpdateGame(Game* game)
                 game->map[i][j] = true;
         }
     }
-    for(int i = 0 ; i < game->height ; ++i)
-        free(tempMap[i]);
-    free(tempMap);
-    return 0;
 }
+
 void PrintMapGame(Game* game, SDL_Renderer* renderer)
 {
-    //affichage des cases noires
+    //Affichage des cases noires
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     for(int i = 0 ; i < game->height ; ++i)
     {
@@ -130,7 +127,7 @@ void PrintMapGame(Game* game, SDL_Renderer* renderer)
                 SDL_RenderFillRect(renderer, &rect);
         }
     }
-    //creation de la grille
+    //Creation de la grille
     if(getGrid(game->gameWindow))
     {
         SDL_SetRenderDrawColor(renderer, 125, 125, 125, 255);
@@ -142,7 +139,7 @@ void PrintMapGame(Game* game, SDL_Renderer* renderer)
 }
 void RandomMapGame(Game* game)
 {
-    //faire un map random
+    //Faire un map random
     for(int i = 0 ; i < game->height ; ++i)
         for(int j = 0 ; j < game->width ; ++j)
         {
@@ -154,7 +151,7 @@ void RandomMapGame(Game* game)
 }
 void ResetMapGame(Game* game)
 {
-    //mettre toute la map a false
+    //Mettre toute la map a false
     for(int i = 0 ; i < game->height ; ++i)
         for(int j = 0 ; j < game->width ; ++j)
             game->map[i][j] = false;
