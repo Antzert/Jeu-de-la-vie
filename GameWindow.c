@@ -78,7 +78,6 @@ GameWindow* ConstructGameWindow(int width, int height, int caseSize, bool fullsc
 }
 void DestructGameWindow(GameWindow* gameWindow)
 {
-    SDL_Log("liberation memoire");
     if(gameWindow == NULL)
         return;
     DestructGame(gameWindow->game);    
