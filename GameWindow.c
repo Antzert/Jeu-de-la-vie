@@ -168,7 +168,7 @@ void GetClickCaseGameWindow(GameWindow* gameWindow, SDL_Event* event, bool leftC
 }
 void changeGrid(GameWindow* gameWindow)
 {
-    gameWindow->grid = gameWindow->paused?false:true;
+    gameWindow->grid = gameWindow->grid?false:true;
 }
 void resetNumberOfGeneration(GameWindow* gameWindow)
 {
