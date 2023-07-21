@@ -29,6 +29,29 @@ cd Jeu-de-la-vie
 ```
 gcc *.c -o Jeu-de-la-vie -lSDL2 -lSDL2_ttf
 ```
+## Utilisation
+
+Pour utiliser l'exécutable, suivez les instructions ci-dessous:
+
+Exécutez la commande suivante dans votre terminal :
+
+```
+./Jeu-de-la-vie
+```
+
+Cela ouvrira une fenêtre avec une largeur de 1920 pixels et une hauteur de 1080 pixels, avec une taille de pixel de 10 et en mode plein écran.
+
+Si vous souhaitez modifier les paramètres, executer la commande avec ces paramètes `[Largeur]`, `[Hauteur]`, `[Taille des pixels]`, `[Plein écran]` dans la commande ci-dessus et exécutez-la. Par exemple :
+
+`[Largeur]` la largeur en pixels de la fenêtre
+`[Hauteur]` la hauteur en pixels de la fenêtre
+`[Taille des pixels]` la taille des pixels
+`[Plein écran]` mode plein ecran 0 pour le désactiver et 1 pour l'activer
+```
+./Jeu-de-la-vie 1280 720 5 0
+```
+
+Cela lancera le jeu avec une résolution de 1280x720 pixels, une taille de pixel de 5, et en mode fenêtré (non plein écran).
 
 ## Fonctionnalités
 
