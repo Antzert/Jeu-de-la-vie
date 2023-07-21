@@ -23,12 +23,15 @@ typedef struct GameWindow
     Game* game;
     SDL_Texture* texteTexture;
 } GameWindow ;
+
 GameWindow* ConstructGameWindow(int width, int height, int caseSize, bool fullscreen)
 {
-    //initialisation des variables
+    //Allocation de la structure GameWindow
     GameWindow* gameWindow = malloc(sizeof(GameWindow));
     if(gameWindow == NULL)
         ExitGameWithError(gameWindow, "Creation structure gameWindow");
+    
+    //Initialisation des variables
     gameWindow->grid = true;
     gameWindow->launch = true;
     gameWindow->paused = true;
@@ -37,49 +40,47 @@ GameWindow* ConstructGameWindow(int width, int height, int caseSize, bool fullsc
     gameWindow->caseSize = caseSize;
     gameWindow->delay = 400;
     gameWindow->generation = 0;
-    //calcul du nombre de case max  
+    gameWindow->texteTexture = NULL;
+
+    //Calcul du nombre de case max
     gameWindow->widthNumberOfCase = ceil(gameWindow->width / gameWindow->caseSize);
     gameWindow->heightNumberOfCase = ceil(gameWindow->height / gameWindow->caseSize);
-    gameWindow->texteRect.x = 0;
-    gameWindow->texteRect.y = 0;
-    gameWindow->texteRect.w = 0;
-    gameWindow->texteRect.h = 0;
-    //initialisation de la SDL
-    if(SDL_Init(SDL_INIT_VIDEO) != 0)
+    gameWindow->texteRect  = (SDL_Rect){0, 0, 0, 0};
+
+    //Initialisation de la SDL
+    if(0 != SDL_Init(SDL_INIT_VIDEO))
         ExitGameWithError(gameWindow, "Initialisation SDL");
-    if(TTF_Init() != 0)
+    if(0 != TTF_Init())
         ExitGameWithError(gameWindow, "Initialisation SDL_TTF");
-    //creation de la fenetre
-    SDL_WindowFlags windowFlags = fullscreen?SDL_WINDOW_FULLSCREEN:SDL_WINDOW_SHOWN;
-    gameWindow->window = SDL_CreateWindow("Jeu de la vie", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gameWindow->width, gameWindow->height, windowFlags);
-    if(gameWindow->window == NULL)
-        ExitGameWithError(gameWindow, "Creation fenetre");
+
+    //Creation de la fenetre et du rendu
+    if(0!= SDL_CreateWindowAndRenderer(gameWindow->width, gameWindow->height, fullscreen?SDL_WINDOW_FULLSCREEN:SDL_WINDOW_SHOWN, &gameWindow->window, &gameWindow->renderer))
+        ExitGameWithError(gameWindow, "Creation fenetre et rendu");
+
+    //Creation de l'icone
     SDL_Surface* iconeSurface = SDL_LoadBMP("icone.bmp");
     if(iconeSurface == NULL)
         ExitGameWithError(gameWindow, "Creation icone");
     SDL_SetWindowIcon(gameWindow->window, iconeSurface);
     SDL_FreeSurface(iconeSurface);
-    //creation du rendu
-    gameWindow->renderer = SDL_CreateRenderer(gameWindow->window, -1, SDL_RENDERER_ACCELERATED);
-    if(gameWindow->renderer == NULL)
-        ExitGameWithError(gameWindow, "Creation rendu");
+
     //Creation de la police
     gameWindow->police = TTF_OpenFont("Ubuntu.ttf" , 50);
     if(gameWindow->police == NULL)
         ExitGameWithError(gameWindow, "Creation police");
-    gameWindow->redColor.r = 255;
-    gameWindow->redColor.g = 0;
-    gameWindow->redColor.b = 0;
-    //creation de la classe Game
+    gameWindow->redColor = (SDL_Color){255, 0, 0, SDL_ALPHA_OPAQUE};
+
+    //creation de la structure Game
     gameWindow->game = ConstructGame(gameWindow->widthNumberOfCase, gameWindow->heightNumberOfCase, gameWindow->caseSize, gameWindow);
     if(gameWindow->game == NULL)
         ExitGameWithError(gameWindow, "Allocation dynamique pour creer la structure Game");
-    gameWindow->texteTexture = NULL;
     return gameWindow;
 }
 void DestructGameWindow(GameWindow* gameWindow)
 {
     SDL_Log("liberation memoire");
+    if(gameWindow == NULL)
+        return;
     DestructGame(gameWindow->game);    
     SDL_DestroyTexture(gameWindow->texteTexture);
     TTF_CloseFont(gameWindow->police);
@@ -91,13 +92,13 @@ void DestructGameWindow(GameWindow* gameWindow)
 }
 void ExitGameWithError(GameWindow* gameWindow, char* message)
 {
-    SDL_LogError(0,"%s" ,message);
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s", message);
     DestructGameWindow(gameWindow);
     exit(EXIT_FAILURE);
 }
 void ChangeTexte(GameWindow* gameWindow)
 {
-    char texte[8];
+    char texte[8] = "";
     sprintf(texte, " %d", gameWindow->generation);
     SDL_Surface* SurfaceTexte = TTF_RenderText_Blended(gameWindow->police, texte , gameWindow->redColor);
     if(SurfaceTexte == NULL)
@@ -115,18 +116,20 @@ void QuitProgramme(GameWindow* gameWindow)
 }
 void UpdateGameWindow(GameWindow* gameWindow)
 {
-    //reinitialiser le font
+    //Reinitialiser le font
     if(SDL_SetRenderDrawColor(gameWindow->renderer, 255, 255, 255, 255) != 0)
         ExitGameWithError(gameWindow, "changement de la couleur pour le font");
     if(SDL_RenderClear(gameWindow->renderer) != 0)
         ExitGameWithError(gameWindow, "clear le font");
-    //update si le jeu n'est pas en pause
+
+    //Update si le jeu n'est pas en pause
     if(!gameWindow->paused)
     {
         UpdateGame(gameWindow->game);
         ++gameWindow->generation;
     }
-    //affichage des case noire
+    
+    //Affichage des cases noires
     PrintMapGame(gameWindow->game, gameWindow->renderer);
     ChangeTexte(gameWindow);
     SDL_RenderCopy(gameWindow->renderer, gameWindow->texteTexture, NULL, &gameWindow->texteRect);
@@ -136,10 +139,7 @@ void UpdateGameWindow(GameWindow* gameWindow)
 }
 void ChangeGameWindowPaused(GameWindow* gameWindow)
 {
-    if(gameWindow->paused)
-        gameWindow->paused = false;
-    else
-        gameWindow->paused = true;
+    gameWindow->paused = gameWindow->paused?false:true;
 }
 void ChangeGameWindowSpeed(GameWindow* gameWindow, int newVitesse)
 {
@@ -168,10 +168,7 @@ void GetClickCaseGameWindow(GameWindow* gameWindow, SDL_Event* event, bool leftC
 }
 void changeGrid(GameWindow* gameWindow)
 {
-    if(gameWindow->grid)
-        gameWindow->grid = false;
-    else
-        gameWindow->grid = true;
+    gameWindow->grid = gameWindow->paused?false:true;
 }
 void resetNumberOfGeneration(GameWindow* gameWindow)
 {
