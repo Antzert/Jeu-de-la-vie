@@ -127,6 +127,10 @@ void UpdateGameWindow(GameWindow* gameWindow)
         UpdateGame(gameWindow->game);
         ++gameWindow->generation;
     }
+    else
+    {
+        SDL_Delay(10);
+    }
     
     //Affichage des cases noires
     PrintMapGame(gameWindow->game, gameWindow->renderer);

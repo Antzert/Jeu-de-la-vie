@@ -5,6 +5,9 @@
 
 int main(int argc, char** argv)
 {
+    char leftClick = 0;
+    char rightsClick = 0;
+    SDL_Event eventMouse;
     //Aleatoire
     srand(time(NULL));
 
@@ -72,6 +75,7 @@ int main(int argc, char** argv)
                         case SDLK_g:
                             resetNumberOfGeneration(gameWindow);
                             continue;
+                        case SDLK_KP_ENTER:
                         case SDLK_RETURN:
                             changeGrid(gameWindow);
                             continue;
@@ -79,14 +83,27 @@ int main(int argc, char** argv)
                     break;
                 case SDL_MOUSEBUTTONDOWN:
                     if(event.button.button == SDL_BUTTON_LEFT)
-                        GetClickCaseGameWindow(gameWindow, &event,true);
+                        leftClick = 1;
                     else if(event.button.button == SDL_BUTTON_RIGHT)
-                        GetClickCaseGameWindow(gameWindow, &event,false);
+                        rightsClick = 1;
+                    break;
+                case SDL_MOUSEBUTTONUP:
+                    if(event.button.button == SDL_BUTTON_LEFT)
+                        leftClick = 0;
+                    else if(event.button.button == SDL_BUTTON_RIGHT)
+                        rightsClick = 0;
+                    break;
+                case SDL_MOUSEMOTION:
+                    eventMouse = event;
                     break;
                 case SDL_QUIT:
                     QuitProgramme(gameWindow);
                     break;
             }
+        if(leftClick && !rightsClick)
+            GetClickCaseGameWindow(gameWindow, &eventMouse,true);
+        if(rightsClick && !leftClick)
+            GetClickCaseGameWindow(gameWindow, &eventMouse,false);
         //Appelle de la methode update
         UpdateGameWindow(gameWindow);
     }
