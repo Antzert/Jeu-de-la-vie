@@ -1,4 +1,4 @@
-#include "GameWindow.h"
+#include "../include/GameWindow.h"
 #include <SDL2/SDL.h>
 #include <time.h>
 #include <string.h>

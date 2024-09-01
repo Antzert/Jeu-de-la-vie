@@ -1,5 +1,5 @@
-#include "GameWindow.h"
-#include "game.h"
+#include "../include/GameWindow.h"
+#include "../include/game.h"
 #include <stdlib.h>
 #include <math.h>
 
@@ -58,14 +58,14 @@ GameWindow* ConstructGameWindow(int width, int height, int caseSize, bool fullsc
         ExitGameWithError(gameWindow, "Creation fenetre et rendu");
 
     //Creation de l'icone
-    SDL_Surface* iconeSurface = SDL_LoadBMP("icone.bmp");
+    SDL_Surface* iconeSurface = SDL_LoadBMP("assets/icone.bmp");
     if(iconeSurface == NULL)
         ExitGameWithError(gameWindow, "Creation icone");
     SDL_SetWindowIcon(gameWindow->window, iconeSurface);
     SDL_FreeSurface(iconeSurface);
 
     //Creation de la police
-    gameWindow->police = TTF_OpenFont("Ubuntu.ttf" , 50);
+    gameWindow->police = TTF_OpenFont("assets/Ubuntu.ttf" , 50);
     if(gameWindow->police == NULL)
         ExitGameWithError(gameWindow, "Creation police");
     gameWindow->redColor = (SDL_Color){255, 0, 0, SDL_ALPHA_OPAQUE};
