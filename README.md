@@ -24,10 +24,17 @@ sudo apt install libsdl2-dev libsdl2-ttf-dev
 cd Jeu-de-la-vie
 ```
 
-4. Compilez le code à l'aide du compilateur GCC :
+4. Utiliser make afin de compiler le programme :
 
 ```
-gcc *.c -o Jeu-de-la-vie -lSDL2 -lSDL2_ttf
+make build
+```
+
+5. Se rendre dans le repertoire et jouer
+
+```
+cd bin
+./JeuDeLaVie
 ```
 ## Utilisation
 
@@ -36,7 +43,7 @@ Pour utiliser l'exécutable, suivez les instructions ci-dessous:
 Exécutez la commande suivante dans votre terminal :
 
 ```
-./Jeu-de-la-vie
+./JeuDeLaVie
 ```
 
 Cela ouvrira une fenêtre avec une largeur de 1920 pixels et une hauteur de 1080 pixels, avec une taille de pixel de 10 et en mode plein écran.
@@ -48,7 +55,7 @@ Si vous souhaitez modifier les paramètres, executer la commande avec ces param�
 `[Taille des pixels]` la taille des pixels   
 `[Plein écran]` mode plein ecran 0 pour le désactiver et 1 pour l'activer   
 ```
-./Jeu-de-la-vie 1280 720 5 0
+./JeuDeLaVie 1280 720 5 0
 ```
 
 Cela lancera le jeu avec une résolution de 1280x720 pixels, une taille de pixel de 5, et en mode fenêtré (non plein écran).
