@@ -3,12 +3,15 @@ CC=gcc
 CFLAGS=-Wall -Wextra -Werror -pedantic-errors -O3 -std=c17
 LDFLAGS=-lSDL2 -lSDL2_ttf
 
+.PHONY: all build clean mrproper
+
+all : bin bin/$(EXEC) bin/assets
+
 build: all clean
 
 clean :
 	rm -f bin/*.o
 
-all : bin bin/$(EXEC) bin/assets
 
 bin/$(EXEC) : bin/main.o bin/game.o bin/GameWindow.o
 	gcc $(CFLAGS) bin/*.o -o bin/$(EXEC) $(LDFLAGS)
