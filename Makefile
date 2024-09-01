@@ -27,3 +27,6 @@ bin/game.o : src/game.c
 
 bin/GameWindow.o : src/GameWindow.c
 	gcc -c $(CFLAGS) src/GameWindow.c -o bin/GameWindow.o $(LDFLAGS)
+
+mrproper:
+	rm -rf bin
