@@ -1,5 +1,5 @@
-#include "game.h"
-#include "GameWindow.h"
+#include "../include/game.h"
+#include "../include/GameWindow.h"
 #include <stdlib.h>
 
 typedef struct Game
