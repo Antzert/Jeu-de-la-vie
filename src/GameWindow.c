@@ -128,9 +128,7 @@ void UpdateGameWindow(GameWindow* gameWindow)
         ++gameWindow->generation;
     }
     else
-    {
         SDL_Delay(10);
-    }
     
     //Affichage des cases noires
     PrintMapGame(gameWindow->game, gameWindow->renderer);
@@ -142,7 +140,7 @@ void UpdateGameWindow(GameWindow* gameWindow)
 }
 void ChangeGameWindowPaused(GameWindow* gameWindow)
 {
-    gameWindow->paused = gameWindow->paused?false:true;
+    gameWindow->paused = !gameWindow->paused;
 }
 void ChangeGameWindowSpeed(GameWindow* gameWindow, int newVitesse)
 {
@@ -171,7 +169,7 @@ void GetClickCaseGameWindow(GameWindow* gameWindow, SDL_Event* event, bool leftC
 }
 void changeGrid(GameWindow* gameWindow)
 {
-    gameWindow->grid = gameWindow->grid?false:true;
+    gameWindow->grid = !gameWindow->grid;
 }
 void resetNumberOfGeneration(GameWindow* gameWindow)
 {

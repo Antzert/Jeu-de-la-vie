@@ -8,8 +8,8 @@ typedef struct Game
     int height;
     int width;
     int caseSize;
-    bool **map;
-    bool **tempMap;
+    bool *map;
+    bool *tempMap;
 } Game ;
 
 Game* ConstructGame(int width, int height, int caseSize, GameWindow* gameWindow)
@@ -23,20 +23,14 @@ Game* ConstructGame(int width, int height, int caseSize, GameWindow* gameWindow)
     game->caseSize = caseSize;
 
     //creation des maps
-    game->map = (bool**)malloc(sizeof(bool*) * height);
-    game->tempMap = (bool**)malloc(sizeof(bool*) * height);
+    game->map = (bool*)malloc(sizeof(bool) * height * width);
+    game->tempMap = (bool*)malloc(sizeof(bool) * height * width);
     if(game->map == NULL || game->tempMap == NULL)
         return NULL;
 
-    for(int i = 0 ; i < game->height ; ++i)
-    {
-        game->map[i] = (bool*)malloc(sizeof(bool)* game->width);
-        game->tempMap[i] = (bool*)malloc(sizeof(bool)* game->width);
-        if(game->map[i] == NULL || game->tempMap[i] == NULL)
-            return NULL;
-    }
     //Mettre toutes les cases de la map en blanc
     ResetMapGame(game);
+
     return game;
 }
 
@@ -44,72 +38,38 @@ void DestructGame(Game* game)
 {
     if(game == NULL)
         return;
-    for(int i = 0 ; i < game->height ; ++i)
-    {
-        if(game->map[i] != NULL)
-            free(game->map[i]);
-        if(game->tempMap[i] != NULL)
-            free(game->tempMap[i]);
-    }
     if(game->map != NULL)
         free(game->map);
     if(game->tempMap != NULL)
         free(game->tempMap);
-    if(game != NULL)
-        free(game);
+    free(game);
 }
 
 void UpdateGame(Game* game)
 {
     //Copy du tableau
-    for(int i = 0 ; i < game->height ; ++i)
-        for(int j = 0 ; j < game->width ; ++j)
-            game->tempMap[i][j] = game->map[i][j];
+    memcpy(game->tempMap, game->map, game->width * game->height * sizeof(bool));
 
     //Boucle de verification
-    for(int i = 0 ; i < game->height ; ++i)
+    int dx[] = {-1, -1, -1, 0, 0, 1, 1, 1};
+    int dy[] = {-1, 0, 1, -1, 1, -1, 0, 1};
+
+    for(int i = 0; i < game->height; ++i)
     {
-        for(int j = 0 ; j < game->width ; ++j)
+        for(int j = 0; j < game->width; ++j)
         {
             int numberOfNeighbord = 0;
-            //Verification si la case en haut a gauche existe
-            if(i != 0 && j != 0)
-                if(game->tempMap[i - 1][j - 1])
-                    ++numberOfNeighbord;
-            //verification si la case en haut au milieu existe
-            if(i != 0)
-                if(game->tempMap[i - 1][j])
-                    ++numberOfNeighbord;
-            //verification si la case en haut a droite existe
-            if(i != 0 && j != game->width -1)
-                if(game->tempMap[i - 1][j + 1])
-                    ++numberOfNeighbord;
-            //verification si la case au mileu a droite existe
-            if(j != game->width -1)
-                if(game->tempMap[i][j + 1])
-                    ++numberOfNeighbord;
-            //verification si la case en bas a droite existe
-            if(i != game->height - 1 && j != game->width -1 )
-                if(game->tempMap[i + 1][j + 1])
-                    ++numberOfNeighbord;
-            //verification si la case en bas au milieu existe
-            if(i != game->height - 1)
-                if(game->tempMap[i + 1][j])
-                    ++numberOfNeighbord;
-            //verification si la case en bas a gauche existe
-            if(j!= 0 && i != game->height - 1)
-                if(game->tempMap[i + 1][j - 1])
-                    ++numberOfNeighbord;
-            //verification si la case au milieu a gauche existe
-            if(j!= 0)
-                if(game->tempMap[i][j - 1])
-                    ++numberOfNeighbord;
-            //si le nombre de voisin n'est pas 2 ou 3 alors on le suprime
-            if(numberOfNeighbord != 2 && numberOfNeighbord != 3)
-                game->map[i][j] = false;
-            //si le nombre de voisin est 3 alors on créé une case
-            if(numberOfNeighbord == 3)
-                game->map[i][j] = true;
+
+            for(int k = 0; k < 8; ++k)
+            {
+                int ni = i + dy[k];
+                int nj = j + dx[k];
+                if(ni >= 0 && ni < game->height && nj >= 0 && nj < game->width)
+                    if(game->tempMap[ni * game->width + nj])
+                        ++numberOfNeighbord;
+            }
+
+            game->map[i * game->width + j] = (numberOfNeighbord == 3 || (numberOfNeighbord == 2 && game->tempMap[i * game->width + j]));
         }
     }
 }
@@ -123,7 +83,7 @@ void PrintMapGame(Game* game, SDL_Renderer* renderer)
         for(int j = 0 ; j < game->width ; ++j)
         {
             SDL_Rect rect = {j* game->caseSize,i*game->caseSize, game->caseSize, game->caseSize};
-            if(game->map[i][j])
+            if(game->map[i * game->width + j])
                 SDL_RenderFillRect(renderer, &rect);
         }
     }
@@ -137,26 +97,18 @@ void PrintMapGame(Game* game, SDL_Renderer* renderer)
             SDL_RenderDrawLine(renderer,0,  i * game->caseSize,game->width*game->caseSize ,i * game->caseSize);
     }
 }
+
 void RandomMapGame(Game* game)
 {
-    //Faire un map random
-    for(int i = 0 ; i < game->height ; ++i)
-        for(int j = 0 ; j < game->width ; ++j)
-        {
-            if(rand() % 2 == 1)
-                game->map[i][j] = true;
-            else
-                game->map[i][j] = false;
-        }
+    for(int i = 0 ; i < game->height * game->width; ++i)
+        game->map[i] = rand() % 2;
 }
 void ResetMapGame(Game* game)
 {
-    //Mettre toute la map a false
-    for(int i = 0 ; i < game->height ; ++i)
-        for(int j = 0 ; j < game->width ; ++j)
-            game->map[i][j] = false;
+    for(int i = 0 ; i < game->height * game->width; ++i)
+        game->map[i] = false;
 }
 void SetMapCaseGame(Game* game, int width, int height, bool leftClick)
 {
-    game->map[height][width] = leftClick;
+    game->map[height * game->width + width] = leftClick;
 }
