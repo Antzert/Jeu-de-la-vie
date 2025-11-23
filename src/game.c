@@ -1,16 +1,6 @@
 #include "../include/game.h"
 #include "../include/GameWindow.h"
 #include <stdlib.h>
-#include <threads.h>
-#if defined(_WIN32)
-    #include <windows.h>
-#elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
-    #include <sys/types.h>
-    #include <sys/sysctl.h>
-#elif defined(__linux__)
-    #include <unistd.h>
-#endif
-
 
 typedef struct Game
 {
@@ -19,8 +9,8 @@ typedef struct Game
     int width;
     int caseSize;
     int thread_number;
-    thrd_t* threads;
-    mtx_t mutex;
+    SDL_Thread** threads;
+    SDL_mutex* mutex;   
     int current_line;
     bool *map;
     bool *tempMap;
@@ -43,39 +33,16 @@ Game* ConstructGame(int width, int height, int caseSize, GameWindow* gameWindow)
         return NULL;
 
     //Calcul du nombre de thread
-    #if defined(_WIN32)
-        SYSTEM_INFO sysinfo;
-        GetSystemInfo(&sysinfo);
-        game->thread_number = (int)sysinfo.dwNumberOfProcessors;
-    #elif defined(__APPLE__) // macOS (utilisation de sysctl)
-        int nprocs;
-        size_t len = sizeof(nprocs);
-        if (sysctlbyname("hw.ncpu", &nprocs, &len, NULL, 0) == 0) {
-            game->thread_number = nprocs;
-        } else {
-            game->thread_number = 1;
-        }
-    #elif defined(__linux__) // Linux et autres systèmes POSIX (avec correction)
-        long nprocs = sysconf(_SC_NPROCESSORS_ONLN);
-        if (nprocs < 1) {
-            game->thread_number = 1;
-        } else {
-            game->thread_number = (int)nprocs;
-        }
-    #else
-        game->thread_number = 1;
-    #endif
+ 
+       game->thread_number = SDL_GetCPUCount();
     if(game->thread_number < 1)
         game->thread_number = 1;
 
-    printf("%d\n", game->thread_number);
-
-
     //Création du mutex
-    mtx_init(&game->mutex, mtx_plain);
+    game->mutex = SDL_CreateMutex();
 
     //Création des threads
-    game->threads = (thrd_t*)malloc(sizeof(thrd_t) * game->thread_number);
+    game->threads = (SDL_Thread**)malloc(sizeof(SDL_Thread*) * game->thread_number);
     if(game->threads == NULL)
         return NULL;
 
@@ -95,7 +62,7 @@ void DestructGame(Game* game)
         free(game->tempMap);
     if(game->threads != NULL)
         free(game->threads);
-    mtx_destroy(&game->mutex);
+    SDL_DestroyMutex(game->mutex);
     free(game);
 }
 
@@ -112,10 +79,10 @@ static int updateLine(void* arg)
     while(true)
     {
         int i = 0;
-        mtx_lock(&game->mutex);
+        SDL_LockMutex(game->mutex);
         i = game->current_line;
         ++game->current_line;
-        mtx_unlock(&game->mutex);
+        SDL_UnlockMutex(game->mutex);
         if(i >= game->height)
         {
             break;
@@ -140,7 +107,7 @@ static int updateLine(void* arg)
         }
     }
 
-    thrd_exit(thrd_success);
+    return 0;
 }
 
 void UpdateGame(Game* game)
@@ -151,11 +118,11 @@ void UpdateGame(Game* game)
 
     for(int i = 0 ; i < game->thread_number ; ++i)
     {
-        thrd_create(&game->threads[i], updateLine, game);
+        game->threads[i] = SDL_CreateThread(updateLine, NULL, game);
     } 
 
     for(int i = 0 ; i < game->thread_number ; ++i)
-        thrd_join(game->threads[i], NULL);
+        SDL_WaitThread(game->threads[i], NULL);
 }
 
 void PrintMapGame(Game* game, SDL_Renderer* renderer)
