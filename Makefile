@@ -1,6 +1,6 @@
 EXEC=JeuDeLaVie
 CC=gcc
-CFLAGS=-Wall -Wextra -Werror -pedantic-errors -O3 -std=c17
+CFLAGS=-Wall -Wextra -Werror -pedantic-errors -Ofast -std=c11
 LDFLAGS=-lSDL2 -lSDL2_ttf
 
 .PHONY: all build clean mrproper
