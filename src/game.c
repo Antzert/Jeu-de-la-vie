@@ -34,7 +34,7 @@ Game* ConstructGame(int width, int height, int caseSize, GameWindow* gameWindow)
 
     //Calcul du nombre de thread
  
-       game->thread_number = SDL_GetCPUCount();
+    game->thread_number = SDL_GetCPUCount();
     if(game->thread_number < 1)
         game->thread_number = 1;
 
